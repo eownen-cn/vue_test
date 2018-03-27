@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>vue_demo2</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<!-- 因为 AJAX 库和通用工具的生态已经相当丰富，Vue 核心代码没有重复 -->
+	<!-- 提供这些功能以保持精简。这也可以让你自由选择自己更熟悉的工具。 -->
+	<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+	<script src="temp.js"></script>
+	<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+	<div id="root">
+		<p>reverse before : {{message}}</p>
+		<p>reverse after : {{reverseMsg}}</p> 
+		<p>tiem of nowByComp : {{nowByComp}}</p> 
+		<p>tiem of nowByFun : {{nowByFun()}}</p> 
+		<p>com : {{fullName}}</p>
+		<p>fun : {{fullNameF()}}</p>
+		<p>
+			Ask a yes/no question:
+			<input v-model="question">
+			<img :src=src >
+		</p>
+		<p>{{ answer }}</p>
+	</div>
+
+	<script type="text/javascript">
+		var data = {
+			message:'This message will be reverse !',
+			firstName:'aaaa',
+			lastName:'bbbb',
+			fullName:'aaaa bbbb',
+			question: '',
+			answer: 'I cannot give you an answer until you ask a question!',
+			src:''
+		}
+		
+		var v = new Vue({
+			el:'#root',
+			data:data,
+			computed:{
+				reverseMsg(){
+					return this.message.split('').reverse().join('')
+				},
+				nowByComp(){return Date.now()}, // 相对绑定方法这里的计算结果将会被缓存，在使用中可以提高性能
+				fullName: {
+				    // getter
+				    get: function () {
+				    	return this.firstName + ' ' + this.lastName
+				    },
+				    // setter
+				    set: function (newValue) {
+				    	var names = newValue.split(' ')
+				    	this.firstName = names[0]
+				    	this.lastName = names[names.length - 1]
+				    }
+				}
+			},
+			methods:{
+				nowByFun(){return Date.now()}, // 动态依赖，每次都重新获取数据
+				fullNameF(){return this.firstName + ' ' + this.lastName},
+				// `_.debounce` 是一个通过 Lodash 限制操作频率的函数。
+			    // 在这个例子中，我们希望限制访问 yesno.wtf/api 的频率
+			    // AJAX 请求直到用户输入完毕才会发出。想要了解更多关于
+			    // `_.debounce` 函数 (及其近亲 `_.throttle`) 的知识，
+			    // 请参考：https://lodash.com/docs#debounce
+			    getAnswer: _.debounce( // 防抖动
+			    	function () {
+			    		if (this.question.indexOf('?') === -1) { // 如果没找到问号，那么提示，然后退出方法
+			    			this.answer = 'Questions usually contain a question mark. ;-)'
+			    			return
+			    		}
+			    		this.answer = 'Thinking...'
+			    		var vm = this
+			    		axios.get('https://yesno.wtf/api')
+			    		.then(function (response) {
+			    			vm.src=response.data.image
+			    			vm.answer = _.capitalize(response.data.answer)
+			    			console.info(vm.src)
+			    			console.info(vm.answer)
+			    		})
+			    		.catch(function (error) {
+			    			vm.answer = 'Error! Could not reach the API. ' + error
+			    		})
+			    	},
+			    // 这是我们为判定用户停止输入等待的毫秒数
+			    500
+			    )
+			},
+			watch:{
+				// 如果 `question` 发生改变，这个函数就会运行
+				question: function (newQuestion, oldQuestion) {
+					this.answer = 'Waiting for you to stop typing...'
+					this.getAnswer()
+				}
+			}
+		}) ;
+	</script>
+</body>
+</html>
