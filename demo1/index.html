@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>vue_demo1</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<script src="temp.js"></script>
+	<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+	<div id="root">
+		{{data.hello}}<br>
+		<span v-bind:title='message'>
+			鼠标悬停几秒钟查看此处动态绑定的提示信息！
+		</span>
+		<div v-if="isShow">
+			我被显示了
+		</div>
+		<ol>
+			<li v-for='i in beanList'>
+				<span>{{i.name}} | {{i.gender}} | {{i.age}}</span>
+			</li>
+		</ol>
+		<div>
+			<p>{{beReverseMsg}}</p>
+			<button type="button" v-on:click='reverseMsg'>点击倒转字符串</button>
+		</div>
+		<div>
+			<p>{{modelMsg}}</p>
+			<input type="text" v-model='modelMsg'>
+		</div>
+		<ol>
+			 <todo-item
+			 	v-for='item in groceryList'
+			 	v-bind:i='item'
+			 	v-bind:key='item.id'/>
+		</ol>
+		<ol>
+			 <todo-item
+			 	v-for='item in groceryList'
+			 	v-bind:i='item'
+			 	v-bind:key='item.id'/>
+		</ol>
+	</div>
+
+	<script type="text/javascript">
+		var data = {
+			hello:'hello world !!!',
+			message:'页面加载于' + new Date().toLocaleString(),
+			isShow:true,
+			beanList:[
+			{
+				name:'eownen',
+				gender:'gentleman',
+				age:18
+			},
+			{
+				name:'denny',
+				gender:'gentleman',
+				age:28
+			},
+			{
+				name:'along',
+				gender:'gentleman',
+				age:38
+			}
+			],
+			beReverseMsg:'！了转倒被要我',
+			modelMsg:'双向绑定！',
+			groceryList:[
+				{id:1,text:'地下城与勇士'},
+				{id:2,text:'魔兽世界（台服）'},
+				{id:3,text:'魔兽世界（国服）'},
+				{id:4,text:'热血江湖'},
+				{id:5,text:'大话西游II'}
+			]
+		}
+		Vue.component('todoItem',{
+			props:['i'],// 表示一个子项(这里的I是一个动态绑定的变量)
+			template:`<li>{{i.text}}</li>` // 将被渲染到页面的HTML
+		})
+		var v = new Vue({
+			el:'#root',
+			data:data,
+			methods:{
+				reverseMsg(){
+					this.beReverseMsg = this.beReverseMsg.split('').reverse().join('')
+				}
+			}
+		}) ;
+	</script>
+</body>
+</html>
